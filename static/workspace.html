@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DAW Workspace</title>
+    <!-- Load Tone.js for browser-based audio synthesis -->
+    <script src="https://cdnjs.cloudflare.com/ajax5/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 15px; }
+        button { background: #1f1f1f; color: #fff; border: 1px solid #444; padding: 8px 16px; cursor: pointer; border-radius: 4px; }
+        button.active { background: #1db954; border-color: #1db954; color: #000; font-weight: bold; }
+        .view-section { display: none; background: #181818; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        .view-section.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(16, 40px); gap: 2px; margin-top: 10px; }
+        .cell { width: 40px; height: 30px; background: #2a2a2a; border-radius: 3px; cursor: pointer; }
+        .cell.active { background: #1db954; }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <button id="btn-kb" class="active" onclick="switchView('keyboard')">Keyboard</button>
+        <button id="btn-gt" onclick="switchView('guitar')">Guitar</button>
+        <button id="btn-bs" onclick="switchView('bass')">Bass</button>
+        <button id="btn-arr" onclick="switchView('arrangement')">Arrangement Timeline</button>
+        <button onclick="togglePlay()" style="background: #1db954; color: black; font-weight: bold;">Play / Stop</button>
+    </div>
+
+    <!-- Keyboard Piano Roll -->
+    <div id="view-keyboard" class="view-section active">
+        <h3>Keyboard Piano Roll</h3>
+        <div class="grid" id="grid-keyboard"></div>
+    </div>
+
+    <!-- Guitar Piano Roll -->
+    <div id="view-guitar" class="view-section">
+        <h3>Guitar Piano Roll</h3>
+        <div class="grid" id="grid-guitar"></div>
+    </div>
+
+    <!-- Bass Piano Roll -->
+    <div id="view-bass" class="view-section">
+        <h3>Bass Piano Roll</h3>
+        <div class="grid" id="grid-bass"></div>
+    </div>
+
+    <!-- Arrangement Timeline View -->
+    <div id="view-arrangement" class="view-section">
+        <h3>Song Arrangement Timeline</h3>
+        <p>Drag and arrange your instrument blocks across the song structure.</p>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <div style="padding: 10px; background: #333; border-radius: 4px; cursor: pointer;">[Intro: Keyboard]</div>
+            <div style="padding: 10px; background: #333; border-radius: 4px; cursor: pointer;">[Verse: Bass + Guitar]</div>
+            <div style="padding: 10px; background: #333; border-radius: 4px; cursor: pointer;">[Chorus: All Instruments]</div>
+        </div>
+    </div>
+
+    <script>
+        // Setup Instruments using Tone.js
+        const keyboardSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+        const guitarSynth = new Tone.PluckSynth().toDestination();
+        const bassSynth = new Tone.MonoSynth().toDestination();
+
+        // Generate Grid UI dynamically
+        ['keyboard', 'guitar', 'bass'].forEach(inst => {
+            const grid = document.getElementById(`grid-${inst}`);
+            for (let i = 0; i < 32; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.onclick = () => cell.classList.toggle('active');
+                grid.appendChild(cell);
+            }
+        });
+
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.toolbar button').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            document.getElementById(`btn-${viewName.slice(0, 3)}`).classList.add('active');
+        }
+
+        let isPlaying = false;
+        async function togglePlay() {
+            await Tone.start();
+            if (!isPlaying) {
+                Tone.Transport.start();
+                isPlaying = true;
+            } else {
+                Tone.Transport.stop();
+                isPlaying = false;
+            }
+        }
+    </script>
+</body>
+</html>
+
